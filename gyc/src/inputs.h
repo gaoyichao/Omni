@@ -4,12 +4,15 @@
 #include <stdio.h>
 #include <types.h>
 
+#define InputBufSize 512
+
 struct Inputs {
-    const char *fileName;
+    char *fileName;
+    FILE *file;
     int line;
     int col;
-    uint8 *stor_begin;
-    uint8 *stor_end;
+    int bufsize;
+    uint8 *buf;
     uint8 *cursor;
 };
 
@@ -30,6 +33,10 @@ struct Inputs {
 #define END_OF_FILE 255
 
 struct Inputs *CreateInputs(const char *filename);
+struct Inputs *CreateInputsFromFile(FILE *file);
+void DestroyInputs(struct Inputs *inputs);
+
+uint8 *InputsGets(struct Inputs *inputs);
 
 uint8 InputsPopChar(struct Inputs *inputs);
 

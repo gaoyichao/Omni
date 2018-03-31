@@ -8,27 +8,26 @@ INCLUDEPATH += basic \
     basic/queue \
     basic/graph
 
-INCLUDEPATH += tests
+INCLUDEPATH += tests src
 
-SOURCES += main.c \
-    basic/queue/queue_uint8.c \
+SOURCES += basic/queue/queue_uint8.c \
     basic/binary_tree.c \
     basic/dictionary.c \
-    inputs.c \
-    tests/t_queue_uint8.c \
-    tests/t_inputs.c \
-    basic/error.c \
-    basic/vector/vector_int.c \
-    basic/vector/vector_voidptr.c \
-    tests/t_vector_int.c \
-    basic/graph/graph.c \
-    tests/t_graph.c \
     basic/graph/graph_topology.c \
     basic/graph/graph_iterator.c \
     basic/graph/graph_degree.c \
     basic/graph/graph_adjlist.c \
-    lexer.c
-
+    basic/error.c \
+    basic/vector/vector_int.c \
+    basic/vector/vector_voidptr.c \
+    basic/graph/graph.c \
+    tests/t_queue_uint8.c \
+    tests/t_inputs.c \
+    tests/t_vector_int.c \
+    tests/t_graph.c \
+    src/inputs.c \
+    src/lexer.c \
+    src/main.c
 
 HEADERS += \
     basic/queue/queue_t_c.h \
@@ -44,14 +43,15 @@ HEADERS += \
     basic/dictionary.h \
     basic/mm.h \
     basic/types.h \
-    inputs.h \
-    tests/t_queue_uint8.h \
-    tests/t_inputs.h \
-    token.h \
     basic/error.h \
-    tests/t_vector_int.h \
     basic/graph/graph.h \
-    tests/t_graph.h \
     basic/graph/graph_iterator.h \
     basic/graph/graph_adjlist.h \
-    lexer.h
+    tests/t_queue_uint8.h \
+    tests/t_inputs.h \
+    tests/t_vector_int.h \
+    tests/t_graph.h \
+    src/inputs.h \
+    src/lexer.h \
+    src/token.h
+

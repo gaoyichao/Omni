@@ -13,25 +13,54 @@
  * @filename: 文件名称
  */
 struct Inputs *CreateInputs(const char *filename) {
-    struct Inputs *inputs = (struct Inputs *)malloc(sizeof(struct Inputs));
     FILE *file = fopen(filename, "r");
     assert(0 != file);
-    // 获取文件长度
-    inputs->fileName = filename;
-    fseek(file, 0, SEEK_END);
-    long len = ftell(file);
-    assert(-1 != len);
-    fseek(file, 0, SEEK_SET);
-    // 读取文件内容，在文件末尾添加EOF
-    inputs->stor_begin = (uint8*)malloc(len+1);
-    assert(0 != inputs->stor_begin);
-    inputs->cursor = inputs->stor_begin;
-    inputs->stor_end = inputs->stor_begin + len+1;
-    fread(inputs->stor_begin, 1, len, file);
-    *((inputs->stor_end)-1) = END_OF_FILE;
 
-    fclose(file);
+    struct Inputs *inputs = CreateInputsFromFile(file);
+    int n = strlen(filename);
+    inputs->fileName = malloc(n + 1);
+    memcpy(inputs->fileName, filename, n);
+    inputs->fileName[n] = '\0';
+
     return inputs;
+}
+
+struct Inputs *CreateInputsFromFile(FILE *file) {
+    assert(0 != file);
+
+    struct Inputs *inputs = (struct Inputs *)malloc(sizeof(struct Inputs));
+    inputs->file = file;
+    inputs->bufsize = InputBufSize;
+    inputs->buf = (uint8*)malloc(InputBufSize);
+    assert(0 != inputs->buf);
+    fgets((char*)(inputs->buf), inputs->bufsize, inputs->file);
+    inputs->cursor = inputs->buf;
+    inputs->line = 1;
+    inputs->col = 1;
+
+    return inputs;
+}
+
+void DestroyInputs(struct Inputs *inputs) {
+    if (0 != inputs->fileName)
+        free(inputs->fileName);
+    if (0 != inputs->buf)
+        free(inputs->buf);
+    fclose(inputs->file);
+    free(inputs);
+}
+
+uint8 *InputsGets(struct Inputs *inputs) {
+    uint8 tmp = inputs->cursor[0];
+    uint8 *re = (uint8*)fgets((char*)(inputs->buf), inputs->bufsize, inputs->file);
+    if (0 == re)
+        return 0;
+    inputs->cursor = inputs->buf;
+    if ('\n' == tmp) {
+        inputs->line++;
+        inputs->col = 1;
+    }
+    return re;
 }
 
 static BOOL _InputsExpectUtf8(struct Inputs *inputs) {
