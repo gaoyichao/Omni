@@ -11,9 +11,19 @@
 #define IsLetterOrDigit(c) (IsLetter(c) || IsDigit(c))
 //#define ToUpper(c)		   (c & ~0x20)
 
-#define CURSOR      (lexer->inputs->cursor)
+#define CURSOR      (lexer->inputs->cur)
 #define COLUMN      (lexer->inputs->col)
 
+static int EatWhiteSpace(struct Lexer *lexer) {
+    int len = 0;
+    uint8 c = InputsCurrentChar(lexer->inputs);
+    while(c == '\t' || c == ' ' || c == '\n') {
+        len++;
+        c = InputsNextChar(lexer->inputs);
+    }
+    return len;
+}
+/*
 static int EatWhiteSpace(struct Lexer *lexer) {
     uint8 *start = CURSOR;
     while(CURSOR[0] == '\t' || CURSOR[0] == ' ' || CURSOR[0] == '\n') {
@@ -25,12 +35,12 @@ static int EatWhiteSpace(struct Lexer *lexer) {
     }
     return CURSOR - start;
 }
-
+*/
 static eToken ScanIdentifier(struct Lexer *lexer) {
-    uint8 pop = 0;
-    while (IsLetterOrDigit(CURSOR[0]) || '_' == CURSOR[0] || IsUtf8Header(CURSOR[0])) {
-        pop = InputsPopChar(lexer->inputs);
-        if (InputUtf8_Error == pop)
+    uint8 c = InputsCurrentChar(lexer->inputs);
+    while (IsLetterOrDigit(c) || '_' == c || IsUtf8Header(c)) {
+        c = InputsNextChar(lexer->inputs);
+        if (InputUtf8_Error == c)
             Fatal(lexer->inputs, "不能识别的字符");
     }
 
@@ -42,11 +52,11 @@ static eToken ScanIdentifier(struct Lexer *lexer) {
 
 
 static eToken ScanBadChar(struct Lexer *lexer) {
-    Fatal(lexer->inputs, "非法字符:\\x%x", CURSOR[0]);
-    CURSOR++;
+    uint8 c = InputsCurrentChar(lexer->inputs);
+    Fatal(lexer->inputs, "非法字符:\\x%x", c);
+    c = InputsNextChar(lexer->inputs);
     return TK_BADCHAR;
 }
-
 
 
 struct Lexer *CreateLexer(struct Inputs *inputs) {
@@ -68,26 +78,27 @@ struct Lexer *CreateLexer(struct Inputs *inputs) {
 
 
 struct Token *GetNextToken(struct Lexer *lexer) {
-    int witelen = EatWhiteSpace(lexer);
-    lexer->inputs->col += witelen;
+    InputsUnMark(lexer->inputs);
+    EatWhiteSpace(lexer);
 
-    uint8 *start = CURSOR;
-    eToken tk = SCANNER(lexer)[CURSOR[0]](lexer);
-    int len = CURSOR - start;
+    InputsMark(lexer->inputs);
+    uint8 c = InputsCurrentChar(lexer->inputs);
+    struct Token *re = Calloc(1, struct Token);
+    re->line = lexer->inputs->line;
+    re->col = lexer->inputs->col;
 
+    eToken tk = SCANNER(lexer)[c](lexer);
+    int len = InputsGetMarkedLen(lexer->inputs);
     if (len <= 0)
         return 0;
 
-    struct Token *re = Calloc(1, struct Token);
     re->token = tk;
-    re->col = lexer->inputs->col;
-    re->line = lexer->inputs->line;
     re->str = Calloc(len+1, uint8);
-    memcpy(re->str, start, len);
+    memcpy(re->str, lexer->inputs->mark, len);
     re->str[len] = '\0';
-
-    lexer->inputs->col += len;
 
     return re;
 }
+
+
 

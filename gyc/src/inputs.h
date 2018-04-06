@@ -4,16 +4,21 @@
 #include <stdio.h>
 #include <types.h>
 
-#define InputBufSize 512
+#define InputBufSize 8
+#define InputReadLen 4
 
 struct Inputs {
     char *fileName;
     FILE *file;
     int line;
     int col;
-    int bufsize;
+
+
+    uint8 *mark;
     uint8 *buf;
-    uint8 *cursor;
+    uint8 *cur;
+    uint8 *end;
+    uint8 *buf_end;
 };
 
 #define InputUtf8_1Byte ((uint8)0x80)
@@ -36,9 +41,13 @@ struct Inputs *CreateInputs(const char *filename);
 struct Inputs *CreateInputsFromFile(FILE *file);
 void DestroyInputs(struct Inputs *inputs);
 
-uint8 *InputsGets(struct Inputs *inputs);
+void InputsMark(struct Inputs *inputs);
+void InputsUnMark(struct Inputs *inputs);
+BOOL InputsIsMarked(struct Inputs *inputs);
+int InputsGetMarkedLen(struct Inputs *inputs);
 
 uint8 InputsPopChar(struct Inputs *inputs);
-
+uint8 InputsCurrentChar(struct Inputs *inputs);
+uint8 InputsNextChar(struct Inputs *inputs);
 
 #endif // INPUTS_H
