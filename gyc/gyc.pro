@@ -27,7 +27,10 @@ SOURCES += basic/queue/queue_uint8.c \
     tests/t_graph.c \
     src/inputs.c \
     src/lexer.c \
-    src/main.c
+    src/main.c \
+    basic/filedirectory.c \
+    tests/t_dictionary.c \
+    tests/t_lexer.c
 
 HEADERS += \
     basic/queue/queue_t_c.h \
@@ -53,5 +56,8 @@ HEADERS += \
     tests/t_graph.h \
     src/inputs.h \
     src/lexer.h \
-    src/token.h
+    src/token.h \
+    basic/filedirectory.h \
+    tests/t_dictionary.h \
+    tests/t_lexer.h
 

@@ -1,6 +1,7 @@
 #include <t_inputs.h>
 #include <stdio.h>
 #include <string.h>
+#include <filedirectory.h>
 #include <assert.h>
 
 void T_Inputs() {
@@ -8,9 +9,14 @@ void T_Inputs() {
     printf("    T_Inputs 测试开始\n");
     printf("******************************\n");
 
+    char *cwd = CurrentWorkDir();
+    assert(0 != cwd);
+    printf("cwd = %s\n", cwd);
+
     struct Inputs *inputs = CreateInputs("hehe.c");
 
-    struct Lexer *lexer = CreateLexer(inputs);
+    struct Lexer *lexer = CreateLexer();
+    LexerSetInputs(lexer, inputs);
 
     struct Token *re = GetNextToken(lexer);
     assert(TK_Id == re->token);
@@ -48,8 +54,11 @@ void T_Inputs() {
         DestroyToken(re);
     }
 
+    re = GetNextToken(lexer);
+    assert(TK_End == re->token);
 
     DestroyInputs(inputs);
+    DestroyLexer(lexer);
     printf("\n  T_graph 测试结束!\n");
     printf("******************************\n");
 }

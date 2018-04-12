@@ -110,14 +110,18 @@ static void _InputsRead(struct Inputs *inputs) {
         inputs->cur = inputs->buf + costed;
     }
 
-    if (0 == fgets((char*)inputs->end, InputReadLen, inputs->file))
+    if (0 == fgets((char*)inputs->end, InputReadLen, inputs->file)) {
+        inputs->end[0] = END_OF_FILE;
         return;
+    }
     inputs->end += strlen((char*)(inputs->end));
 }
 /*
  * _InputsRepairBuf - 读入更多的数据
  */
 static void _InputsRepairBuf(struct Inputs *inputs) {
+    if (END_OF_FILE == inputs->end[0])
+        return;
     int len = inputs->end - inputs->cur;
     if (len < 2)
         _InputsRead(inputs);

@@ -160,17 +160,18 @@ static eToken ScanNumber(struct Lexer *lexer) {
 
 static eToken ScanBadChar(struct Lexer *lexer) {
     uint8 c = InputsCurrentChar(lexer->inputs);
-    Fatal(lexer->inputs, "非法字符:\\x%x", c);
+    Fatal(lexer->inputs, "非法字符:0x%x", c);
     c = InputsNextChar(lexer->inputs);
     return TK_BadChar;
 }
 
+static eToken ScanEof(struct Lexer *lexer) {
+    return TK_End;
+}
 
-
-
-struct Lexer *CreateLexer(struct Inputs *inputs) {
+struct Lexer *CreateLexer() {
     struct Lexer *lexer = (struct Lexer *)malloc(sizeof(struct Lexer));
-    lexer->inputs = inputs;
+    lexer->keyWordsDic = 0;
 
     uint8 i = 0;
     for (i = 0; i < END_OF_FILE; i++) {
@@ -185,8 +186,46 @@ struct Lexer *CreateLexer(struct Inputs *inputs) {
     lexer->scanners['\''] = ScanCharLiteral;
     lexer->scanners['\"'] = ScanStringLiteral;
     lexer->scanners['.'] = ScanFloatLiteral;
+    lexer->scanners[END_OF_FILE] = ScanEof;
 
     return lexer;
+}
+
+/*
+ * LexerLoadKeywords - 从指定文件中装载关键字
+ *
+ * @lexer: 目标词法器
+ * @filename: 关键字文件名
+ */
+void LexerLoadKeywords(struct Lexer *lexer, char *filename) {
+    struct Inputs *inputs = CreateInputs(filename);
+    assert(0 != inputs);
+    struct Inputs *bk = lexer->inputs;
+    lexer->inputs = inputs;
+
+    lexer->keyWordsDic = CreateDictionary();
+
+    struct Token *tk = GetNextToken(lexer);
+    while (TK_End != tk->token) {
+        DicInsertPair(lexer->keyWordsDic, tk->str, 0);
+        DestroyToken(tk);
+        tk = GetNextToken(lexer);
+    }
+    DestroyToken(tk);
+
+    DestroyInputs(inputs);
+    lexer->inputs = bk;
+}
+
+void LexerSetInputs(struct Lexer *lexer, struct Inputs *inputs) {
+    lexer->inputs = inputs;
+}
+
+void DestroyLexer(struct Lexer *lexer) {
+    lexer->inputs = 0;
+    if (0 != lexer->keyWordsDic)
+        DestroyDictionary(lexer->keyWordsDic);
+    free(lexer);
 }
 
 #define SCANNER(plexer) ((plexer)->scanners)
@@ -203,13 +242,21 @@ struct Token *GetNextToken(struct Lexer *lexer) {
 
     eToken tk = SCANNER(lexer)[c](lexer);
     int len = InputsGetMarkedLen(lexer->inputs);
-    if (len <= 0)
+    if (len < 0) {
+        Free(re);
         return 0;
+    }
 
     re->token = tk;
     re->str = Calloc(len+1, uint8);
     memcpy(re->str, lexer->inputs->mark, len);
     re->str[len] = '\0';
+
+    if (0 != lexer->keyWordsDic && TK_Id == tk) {
+        DicPairPtr pair = DicGetPair(lexer->keyWordsDic, re->str);
+        if (0 != pair)
+            re->token = TK_Keyword;
+    }
 
     return re;
 }

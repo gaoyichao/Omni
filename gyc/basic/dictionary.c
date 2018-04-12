@@ -1,5 +1,6 @@
 #include <dictionary.h>
 #include <string.h>
+#include <stdio.h>
 #include <assert.h>
 
 #define VECTOR_NUMBER
@@ -133,6 +134,7 @@ struct Dictionary *CreateDictionary(void) {
  */
 DicPairPtr DicInsertPair(struct Dictionary *dic, const uint8 *key, void *vptr) {
     int len = strlen((char*)key) + 1;
+
     struct BinaryNode *node = _Dic_Insert(dic, key, len);
     if (0 == node)
         return 0;
