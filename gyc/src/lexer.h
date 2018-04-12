@@ -24,6 +24,7 @@ struct Token {
 };
 
 #include <dictionary.h>
+#include <inputs.h>
 
 struct Lexer;
 typedef eToken (*ScanFunc)(struct Lexer *lexer);

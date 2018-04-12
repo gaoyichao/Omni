@@ -85,6 +85,7 @@ void T_BinaryTreeInsert(void) {
 
 #include <t_inputs.h>
 #include <t_lexer.h>
+#include <t_parser.h>
 #include <stdio.h>
 
 int main(void)
@@ -101,6 +102,7 @@ int main(void)
 
     T_Inputs();
     T_Lexer();
+    T_Parser();
 
     printf("通过了!");
 

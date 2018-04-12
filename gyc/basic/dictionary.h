@@ -14,10 +14,12 @@ struct ByteInfo {
     struct BinaryNode *parent;  // 指向自己的父节点
     struct BinaryNode *current; // 指向包含自己的节点
 };
-
+/*
+ * DicPair - 字典的键值对
+ */
 struct DicPair {
-    struct ByteInfo *key;
-    void *vptr;
+    struct ByteInfo *key;   // 指向字典树中的一个叶子节点
+    void *vptr;             // 指向一个由用户提供的内存
 };
 
 typedef struct DicPair* DicPairPtr;

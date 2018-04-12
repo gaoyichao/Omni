@@ -75,9 +75,6 @@ static eToken ScanIdentifier(struct Lexer *lexer) {
         if (InputUtf8_Error == c)
             Fatal(lexer->inputs, "不能识别的字符");
     }
-
-    // TODO: keyword
-
     return TK_Id;
 }
 
@@ -169,6 +166,24 @@ static eToken ScanEof(struct Lexer *lexer) {
     return TK_End;
 }
 
+static eToken ScanMinus(struct Lexer *lexer) {
+    uint8 c = InputsNextChar(lexer->inputs);
+
+    if (IsDigit(c))
+        return ScanNumber(lexer);
+
+    return TK_Begin;
+}
+
+static eToken ScanPlus(struct Lexer *lexer) {
+    uint8 c = InputsNextChar(lexer->inputs);
+
+    if (IsDigit(c))
+        return ScanNumber(lexer);
+
+    return TK_Begin;
+}
+
 struct Lexer *CreateLexer() {
     struct Lexer *lexer = (struct Lexer *)malloc(sizeof(struct Lexer));
     lexer->keyWordsDic = 0;
@@ -186,6 +201,8 @@ struct Lexer *CreateLexer() {
     lexer->scanners['\''] = ScanCharLiteral;
     lexer->scanners['\"'] = ScanStringLiteral;
     lexer->scanners['.'] = ScanFloatLiteral;
+    lexer->scanners['-'] = ScanMinus;
+    lexer->scanners['+'] = ScanPlus;
     lexer->scanners[END_OF_FILE] = ScanEof;
 
     return lexer;
