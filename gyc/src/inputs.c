@@ -46,8 +46,47 @@ struct Inputs *CreateInputsFromFile(FILE *file) {
 
     return inputs;
 }
-
-void InputsRead(struct Inputs *inputs) {
+/*
+ * DestroyInputs - 销毁Input
+ *
+ * @inputs: 目标
+ */
+void DestroyInputs(struct Inputs *inputs) {
+    if (0 != inputs->fileName)
+        free(inputs->fileName);
+    if (0 != inputs->buf)
+        free(inputs->buf);
+    fclose(inputs->file);
+    free(inputs);
+}
+/*
+ * InputsMark - 标记当前位置
+ */
+void InputsMark(struct Inputs *inputs) {
+    inputs->mark = inputs->cur;
+}
+/*
+ * InputsUnMark - 取消标记
+ */
+void InputsUnMark(struct Inputs *inputs) {
+    inputs->mark = inputs->end;
+}
+/*
+ * InputsIsMarked - 判定当前是否标记
+ */
+BOOL InputsIsMarked(struct Inputs *inputs) {
+    return (inputs->mark != inputs->end);
+}
+/*
+ * InputsGetMarkedLen - 获取当前位置到标记间的长度
+ */
+int InputsGetMarkedLen(struct Inputs *inputs) {
+    return (inputs->cur - inputs->mark);
+}
+/*
+ * InputsRead - 读入数据
+ */
+static void _InputsRead(struct Inputs *inputs) {
     BOOL isMarked = InputsIsMarked(inputs);
     uint8 *start = isMarked ? inputs->mark : inputs->cur;
     int costed = isMarked ? (inputs->cur - inputs->mark) : 0;
@@ -76,41 +115,16 @@ void InputsRead(struct Inputs *inputs) {
     inputs->end += strlen((char*)(inputs->end));
 }
 /*
- * DestroyInputs - 销毁Input
- *
- * @inputs: 目标
+ * _InputsRepairBuf - 读入更多的数据
  */
-void DestroyInputs(struct Inputs *inputs) {
-    if (0 != inputs->fileName)
-        free(inputs->fileName);
-    if (0 != inputs->buf)
-        free(inputs->buf);
-    fclose(inputs->file);
-    free(inputs);
-}
-
-void InputsMark(struct Inputs *inputs) {
-    inputs->mark = inputs->cur;
-}
-
-void InputsUnMark(struct Inputs *inputs) {
-    inputs->mark = inputs->end;
-}
-
-BOOL InputsIsMarked(struct Inputs *inputs) {
-    return (inputs->mark != inputs->end);
-}
-
-int InputsGetMarkedLen(struct Inputs *inputs) {
-    return (inputs->cur - inputs->mark);
-}
-
 static void _InputsRepairBuf(struct Inputs *inputs) {
     int len = inputs->end - inputs->cur;
     if (len < 2)
-        InputsRead(inputs);
+        _InputsRead(inputs);
 }
-
+/*
+ * _InputsExpectUtf8 - 断言当前字节是utf8编码的一个字节，并跳过
+ */
 static BOOL _InputsExpectUtf8(struct Inputs *inputs) {
     _InputsRepairBuf(inputs);
 
@@ -123,7 +137,7 @@ static BOOL _InputsExpectUtf8(struct Inputs *inputs) {
 }
 
 /*
- * InputsGetNextChar - 获取下一个字节,utf8
+ * InputsGetNextChar - 获取当前字符,并跳过,utf8
  *
  * @inputs: 考察输入序列
  */
@@ -173,7 +187,7 @@ uint8 InputsPopChar(struct Inputs *inputs) {
     return InputUtf8_Error;
 }
 /*
- * InputsCurrentChar - 获取当前字节,utf8
+ * InputsCurrentChar - 获取当前字符,不跳过,utf8
  */
 uint8 InputsCurrentChar(struct Inputs *inputs) {
     _InputsRepairBuf(inputs);
@@ -181,7 +195,7 @@ uint8 InputsCurrentChar(struct Inputs *inputs) {
     return inputs->cur[0];
 }
 /*
- * InputsNextChar - 获取下一个字节,utf8
+ * InputsNextChar - 获取下一个字符,utf8
  */
 uint8 InputsNextChar(struct Inputs *inputs) {
     uint8 c = InputsPopChar(inputs);

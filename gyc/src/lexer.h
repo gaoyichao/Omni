@@ -1,16 +1,15 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-
-
-
 typedef enum eToken
 {
-    TK_BEGIN,
-#define TOKEN(k, s) k,
-#include <token.h>
-#undef  TOKEN
-    TK_BADCHAR
+    TK_Begin = 0,
+    TK_Id,
+    TK_IntegerConstant,
+    TK_FloatingConstant,
+    TK_CharConstant,
+    TK_StringLiteral,
+    TK_BadChar
 } eToken;
 
 struct Token {
@@ -33,7 +32,7 @@ struct Lexer {
 struct Lexer *CreateLexer(struct Inputs *inputs);
 
 struct Token *GetNextToken(struct Lexer *lexer);
-
+void DestroyToken(struct Token *token);
 
 
 

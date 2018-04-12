@@ -1,7 +1,10 @@
 #include <inputs.h>
 #include <lexer.h>
 #include <error.h>
+#include <assert.h>
 #include <mm.h>
+
+#include <stdio.h>
 
 #define IsDigit(c)         ((c) >= '0' && (c) <= '9')
 #define IsOctDigit(c)      ((c) >= '0' && (c) <= '7')
@@ -23,19 +26,48 @@ static int EatWhiteSpace(struct Lexer *lexer) {
     }
     return len;
 }
-/*
-static int EatWhiteSpace(struct Lexer *lexer) {
-    uint8 *start = CURSOR;
-    while(CURSOR[0] == '\t' || CURSOR[0] == ' ' || CURSOR[0] == '\n') {
-        CURSOR++;
-        if ('\n' == CURSOR[0]) {
-            InputsGets(lexer->inputs);
-            start = CURSOR;
+
+static uint8 EatEscapeSequence(struct Lexer *lexer) {
+    uint8 c = InputsNextChar(lexer->inputs);
+
+    switch (c) {
+    case '\'':
+    case '\"':
+    case '?':
+    case '\\':
+    case 'a':
+    case 'b':
+    case 'f':
+    case 'n':
+    case 'r':
+    case 't':
+    case 'v':
+        return InputsNextChar(lexer->inputs);
+    default:
+        break;
+    }
+
+    if (IsOctDigit(c)) {
+        c = InputsNextChar(lexer->inputs);
+        if (IsOctDigit(c)) {
+            c = InputsNextChar(lexer->inputs);
+            if (IsOctDigit(c)) {
+                c = InputsNextChar(lexer->inputs);
+            }
+        }
+        return c;
+    }
+
+    if ('x' == c) {
+        c = InputsNextChar(lexer->inputs);
+        assert(IsHexDigit(c));
+        while (IsHexDigit(c)) {
+            c = InputsNextChar(lexer->inputs);
         }
     }
-    return CURSOR - start;
+    return c;
 }
-*/
+
 static eToken ScanIdentifier(struct Lexer *lexer) {
     uint8 c = InputsCurrentChar(lexer->inputs);
     while (IsLetterOrDigit(c) || '_' == c || IsUtf8Header(c)) {
@@ -46,17 +78,94 @@ static eToken ScanIdentifier(struct Lexer *lexer) {
 
     // TODO: keyword
 
-    return TK_ID;
+    return TK_Id;
 }
 
+static eToken ScanCharLiteral(struct Lexer *lexer) {
+    uint8 c = InputsNextChar(lexer->inputs);
 
+    while ('\'' != c) {
+        if ('\\' == c)
+            c = EatEscapeSequence(lexer);
+        else
+            c = InputsNextChar(lexer->inputs);
+    }
+    c = InputsNextChar(lexer->inputs);
+
+    return TK_CharConstant;
+}
+
+static eToken ScanStringLiteral(struct Lexer *lexer) {
+    uint8 c = InputsNextChar(lexer->inputs);
+
+    while ('\"' != c) {
+        if ('\\' == c)
+            c = EatEscapeSequence(lexer);
+        else
+            c = InputsNextChar(lexer->inputs);
+    }
+    c = InputsNextChar(lexer->inputs);
+
+    return TK_StringLiteral;
+}
+
+static eToken ScanFloatLiteral(struct Lexer *lexer) {
+    uint8 c = InputsCurrentChar(lexer->inputs);
+
+    if ('.' == c) {
+        c = InputsNextChar(lexer->inputs);
+        while (IsDigit(c))
+            c = InputsNextChar(lexer->inputs);
+    }
+
+    if ('e' == c || 'E' == c) {
+        c = InputsNextChar(lexer->inputs);
+        if ('+' == c || '-' == c)
+            c = InputsNextChar(lexer->inputs);
+        while (IsDigit(c))
+            c = InputsNextChar(lexer->inputs);
+    }
+
+    while ('f' == c || 'F' == c || 'l' == c || 'L' == c)
+        c = InputsNextChar(lexer->inputs);
+
+    return TK_FloatingConstant;
+}
+
+static eToken ScanNumber(struct Lexer *lexer) {
+    uint8 c = InputsCurrentChar(lexer->inputs);
+
+    if ('0' == c) {
+        c = InputsNextChar(lexer->inputs);
+        if ('x' == c || 'X' == c) {
+            c = InputsNextChar(lexer->inputs);
+            while (IsHexDigit(c))
+                c = InputsNextChar(lexer->inputs);
+        } else {
+            while (IsOctDigit(c))
+                c = InputsNextChar(lexer->inputs);
+        }
+    } else {
+        while (IsDigit(c))
+            c = InputsNextChar(lexer->inputs);
+    }
+
+    if ('.' == c || 'e' == c || 'E' == c)
+        return ScanFloatLiteral(lexer);
+
+    while ('u' == c || 'U' == c || 'l' == c || 'L' == c)
+        c = InputsNextChar(lexer->inputs);
+    return TK_IntegerConstant;
+}
 
 static eToken ScanBadChar(struct Lexer *lexer) {
     uint8 c = InputsCurrentChar(lexer->inputs);
     Fatal(lexer->inputs, "非法字符:\\x%x", c);
     c = InputsNextChar(lexer->inputs);
-    return TK_BADCHAR;
+    return TK_BadChar;
 }
+
+
 
 
 struct Lexer *CreateLexer(struct Inputs *inputs) {
@@ -65,17 +174,22 @@ struct Lexer *CreateLexer(struct Inputs *inputs) {
 
     uint8 i = 0;
     for (i = 0; i < END_OF_FILE; i++) {
-        if (IsLetter(i) || '_' == i || IsUtf8Header(i))
+        if (IsLetter(i) || IsUtf8Header(i))
             lexer->scanners[i] = ScanIdentifier;
+        else if (IsDigit(i))
+            lexer->scanners[i] = ScanNumber;
         else
             lexer->scanners[i] = ScanBadChar;
     }
+    lexer->scanners['_'] = ScanIdentifier;
+    lexer->scanners['\''] = ScanCharLiteral;
+    lexer->scanners['\"'] = ScanStringLiteral;
+    lexer->scanners['.'] = ScanFloatLiteral;
 
     return lexer;
 }
 
 #define SCANNER(plexer) ((plexer)->scanners)
-
 
 struct Token *GetNextToken(struct Lexer *lexer) {
     InputsUnMark(lexer->inputs);
@@ -100,5 +214,8 @@ struct Token *GetNextToken(struct Lexer *lexer) {
     return re;
 }
 
-
+void DestroyToken(struct Token *token) {
+    Free(token->str);
+    Free(token);
+}
 
