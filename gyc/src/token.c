@@ -1,6 +1,17 @@
 #include <token.h>
 #include <mm.h>
 
+#define VECTOR_NUMBER
+#define T eToken
+#define TEMPLATE_TYPE(a) a ##_eToken
+#define TEMPLATE_FUNCTION(a,b) a ##_eToken_## b
+#include <vector/vector_t_c.h>
+#include <vector/vector_t_num_c.h>
+#undef TEMPLATE_FUNCTION
+#undef TEMPLATE_TYPE
+#undef T
+#undef VECTOR_NUMBER
+
 struct Token *CreateToken(eToken type, const uint8 *buf, int len) {
     struct Token *re = Calloc(1, struct Token);
     re->line = 0;

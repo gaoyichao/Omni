@@ -172,7 +172,7 @@ static eToken ScanMinus(struct Lexer *lexer) {
     if (IsDigit(c))
         return ScanNumber(lexer);
 
-    return TK_Begin;
+    return TK_SUB;
 }
 
 static eToken ScanPlus(struct Lexer *lexer) {
@@ -181,7 +181,7 @@ static eToken ScanPlus(struct Lexer *lexer) {
     if (IsDigit(c))
         return ScanNumber(lexer);
 
-    return TK_Begin;
+    return TK_Add;
 }
 
 struct Lexer *CreateLexer() {

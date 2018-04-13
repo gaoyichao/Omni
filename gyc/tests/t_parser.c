@@ -12,29 +12,22 @@ void T_Parser() {
     printf("******************************\n");
 
     struct Inputs *inputs = CreateInputs("Calculator.gyc");
-    struct Lexer *lexer = CreateLexer();
-    struct Parser *parser = CreateParser();
+    struct SymbolTable *symTable = CreateSymbolTable();
 
+    struct Lexer *lexer = CreateLexer();
     lexer->inputs = inputs;
+    lexer->symTable = symTable;
+
+    struct Parser *parser = CreateParser();
+    parser->symTable = symTable;
     parser->lexer = lexer;
 
-
-    struct Token *tk = GetNextToken(lexer);
-    while (TK_End != tk->token) {
-        if (TK_FloatingConstant == tk->token) {
-            struct Expression *exp = CreatePrimaryExp_Constant(tk);
-            printf("%f\n", CalcExpression(exp));
-        }
-
-        printf("KEYWORD:%s,line:%d,col:%d\n", tk->str, tk->line, tk->col);
-        DestroyToken(tk);
-        tk = GetNextToken(lexer);
+    struct Expression *exp = ParseExpression(parser);
+    while (0 != exp) {
+        printf("%f\n", CalcExpression(exp));
+        DestroyExpression(exp);
+        exp = ParseExpression(parser);
     }
-    DestroyToken(tk);
-
-
-
-
 
     DestroyInputs(inputs);
     DestroyLexer(lexer);
