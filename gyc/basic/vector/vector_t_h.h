@@ -52,6 +52,7 @@ int TEMPLATE_FUNCTION(vector,get_interval)(const TEMPLATE_TYPE(vector) *v,TEMPLA
  */
 int TEMPLATE_FUNCTION(vector, contains_op)(const TEMPLATE_TYPE(vector) *v, T e, int (*op)(const void*, const void*));
 int TEMPLATE_FUNCTION(vector, empty)(const TEMPLATE_TYPE(vector) *v);
+int TEMPLATE_FUNCTION(vector, full)(const TEMPLATE_TYPE(vector) *v);
 int TEMPLATE_FUNCTION(vector, size)(const TEMPLATE_TYPE(vector) *v);
 int TEMPLATE_FUNCTION(vector, capacity)(const TEMPLATE_TYPE(vector) *v);
 
@@ -65,6 +66,7 @@ T TEMPLATE_FUNCTION(vector, e)(TEMPLATE_TYPE(vector) *v, int pos);
 T TEMPLATE_FUNCTION(vector, tail)(TEMPLATE_TYPE(vector) *v);
 T* TEMPLATE_FUNCTION(vector, e_ptr)(TEMPLATE_TYPE(vector) *v, int pos);
 void TEMPLATE_FUNCTION(vector, set)(TEMPLATE_TYPE(vector) *v, int pos, T value);
+int TEMPLATE_FUNCTION(vector, offset)(TEMPLATE_TYPE(vector) *v, T *a);
 /*
  * 各种resize
  */

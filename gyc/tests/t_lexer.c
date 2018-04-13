@@ -32,8 +32,20 @@ void T_Lexer() {
         tk = GetNextToken(lexer);
     }
     DestroyToken(tk);
-
     DestroyInputs(inputs);
+
+    // Symbol的测试
+    Symbol *sym1 = SearchSymbol(symTable, "douniwan");
+    assert(0 != sym1);
+    RemoveSymbol(symTable, "douniwan");
+    assert(0 == SearchSymbol(symTable, "douniwan"));
+    Symbol *sym2 = InsertSymbol(symTable, "douniwan", TK_Id, 0);
+    Symbol *sym3 = SearchSymbol(symTable, "douniwan");
+    assert(sym1 == sym3 && sym1 == sym2);
+    assert(TK_Id == sym2->type);
+    sym3 = ModifySymbol(symTable, "douniwan", TK_Keyword, 0);
+    assert(TK_Keyword == sym2->type);
+
 
 
     DestroySymbolTable(symTable);

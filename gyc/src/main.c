@@ -104,7 +104,9 @@ int main(void)
     T_Lexer();
     T_Parser();
 
-    printf("通过了!");
+    printf("通过了!\n");
+    printf("sizeof(void*):%d\n", sizeof(void*));
+    printf("sizeof(uint32):%d\n", sizeof(uint32));
 
     return 0;
 }

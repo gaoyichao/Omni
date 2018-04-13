@@ -264,10 +264,10 @@ struct Token *GetNextToken(struct Lexer *lexer) {
     re->line = lexer->inputs->line;
     re->col = lexer->inputs->col;
 
-    if (0 != lexer->keyWordsDic && TK_Id == tk) {
-        DicPairPtr pair = DicGetPair(lexer->keyWordsDic, re->str);
-        if (0 != pair)
-            re->token = TK_Keyword;
+    if (0 != lexer->symTable && TK_Id == tk) {
+        Symbol *sym = SearchSymbol(lexer->symTable, re->str);
+        if (0 != sym)
+            re->token = sym->type;
     }
 
     return re;

@@ -152,6 +152,17 @@ int TEMPLATE_FUNCTION(vector, empty)(const TEMPLATE_TYPE(vector) *v)
 	assert(v->stor_begin != NULL);
 	return v->stor_begin == v->end;
 }
+/*
+ * vector_T_full - 判定vector是否为满.
+ *
+ * 为满返回1,否则返回0.
+ */
+int TEMPLATE_FUNCTION(vector, full)(const TEMPLATE_TYPE(vector) *v)
+{
+    assert(v != NULL);
+    assert(v->stor_begin != NULL);
+    return v->stor_end == v->end;
+}
 
 /*
  * vector_T_size - 获取vector中元素数量
@@ -210,6 +221,21 @@ void TEMPLATE_FUNCTION(vector, set)(TEMPLATE_TYPE(vector) *v, int pos, T value)
 	assert(NULL != v->stor_begin);
 	*(v->stor_begin + pos) = value;
 }
+/*
+ * vector_T_offset - 计算@a在@v中的偏移量
+ *
+ * 若@a不在@v中则返回-1
+ */
+int TEMPLATE_FUNCTION(vector, offset)(TEMPLATE_TYPE(vector) *v, T *a)
+{
+    assert(NULL != v);
+    assert(NULL != v->stor_begin);
+
+    if (a < v->stor_begin || a >= v->end)
+        return -1;
+    return (a - v->stor_begin);
+}
+
 /*
  * vector_T_null - 设定@v中所有元素全为0
  */
