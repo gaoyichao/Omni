@@ -186,7 +186,7 @@ static eToken ScanPlus(struct Lexer *lexer) {
 
 struct Lexer *CreateLexer() {
     struct Lexer *lexer = (struct Lexer *)malloc(sizeof(struct Lexer));
-    lexer->keyWordsDic = 0;
+    lexer->symTable = 0;
 
     uint8 i = 0;
     for (i = 0; i < END_OF_FILE; i++) {
@@ -215,16 +215,18 @@ struct Lexer *CreateLexer() {
  * @filename: 关键字文件名
  */
 void LexerLoadKeywords(struct Lexer *lexer, char *filename) {
+    assert(0 != lexer->symTable);
+
     struct Inputs *inputs = CreateInputs(filename);
     assert(0 != inputs);
     struct Inputs *bk = lexer->inputs;
     lexer->inputs = inputs;
 
-    lexer->keyWordsDic = CreateDictionary();
-
     struct Token *tk = GetNextToken(lexer);
     while (TK_End != tk->token) {
-        DicInsertPair(lexer->keyWordsDic, tk->str, 0);
+        Symbol *sym = InsertSymbol(lexer->symTable, tk->str, TK_Keyword, 0);
+        if (0 == sym)
+            Fatal(inputs, "重复定义关键字:%s\n", tk->str);
         DestroyToken(tk);
         tk = GetNextToken(lexer);
     }
@@ -240,8 +242,7 @@ void LexerSetInputs(struct Lexer *lexer, struct Inputs *inputs) {
 
 void DestroyLexer(struct Lexer *lexer) {
     lexer->inputs = 0;
-    if (0 != lexer->keyWordsDic)
-        DestroyDictionary(lexer->keyWordsDic);
+    lexer->symTable = 0;
     free(lexer);
 }
 
@@ -253,21 +254,15 @@ struct Token *GetNextToken(struct Lexer *lexer) {
 
     InputsMark(lexer->inputs);
     uint8 c = InputsCurrentChar(lexer->inputs);
-    struct Token *re = Calloc(1, struct Token);
-    re->line = lexer->inputs->line;
-    re->col = lexer->inputs->col;
 
     eToken tk = SCANNER(lexer)[c](lexer);
     int len = InputsGetMarkedLen(lexer->inputs);
-    if (len < 0) {
-        Free(re);
+    if (len < 0)
         return 0;
-    }
 
-    re->token = tk;
-    re->str = Calloc(len+1, uint8);
-    memcpy(re->str, lexer->inputs->mark, len);
-    re->str[len] = '\0';
+    struct Token *re = CreateToken(tk, lexer->inputs->mark, len);
+    re->line = lexer->inputs->line;
+    re->col = lexer->inputs->col;
 
     if (0 != lexer->keyWordsDic && TK_Id == tk) {
         DicPairPtr pair = DicGetPair(lexer->keyWordsDic, re->str);
@@ -278,8 +273,4 @@ struct Token *GetNextToken(struct Lexer *lexer) {
     return re;
 }
 
-void DestroyToken(struct Token *token) {
-    Free(token->str);
-    Free(token);
-}
 

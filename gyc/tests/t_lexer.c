@@ -16,6 +16,8 @@ void T_Lexer() {
 
 
     struct Lexer *lexer = CreateLexer();
+    struct SymbolTable *symTable = CreateSymbolTable();
+    lexer->symTable = symTable;
     LexerLoadKeywords(lexer, "KeyWords");
 
 
@@ -34,6 +36,7 @@ void T_Lexer() {
     DestroyInputs(inputs);
 
 
+    DestroySymbolTable(symTable);
     DestroyLexer(lexer);
     printf("\n  T_Lexer 测试结束!\n");
     printf("******************************\n");

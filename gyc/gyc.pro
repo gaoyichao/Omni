@@ -32,7 +32,9 @@ SOURCES += basic/queue/queue_uint8.c \
     tests/t_dictionary.c \
     tests/t_lexer.c \
     src/parser.c \
-    tests/t_parser.c
+    tests/t_parser.c \
+    src/symboltable.c \
+    src/token.c
 
 HEADERS += \
     basic/queue/queue_t_c.h \
@@ -63,5 +65,6 @@ HEADERS += \
     tests/t_dictionary.h \
     tests/t_lexer.h \
     src/parser.h \
-    tests/t_parser.h
+    tests/t_parser.h \
+    src/symboltable.h
 
