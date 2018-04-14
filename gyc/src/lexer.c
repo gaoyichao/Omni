@@ -10,7 +10,7 @@
 #define IsOctDigit(c)      ((c) >= '0' && (c) <= '7')
 #define IsHexDigit(c)      (IsDigit(c) || ((c) >= 'A' && (c) <= 'F') || ((c) >= 'a' && (c) <= 'f'))
 #define IsLetter(c)        (((c) >= 'a' && (c) <= 'z') || ((c) == '_') || ((c) >= 'A' && (c) <= 'Z'))
-#define IsUtf8Header(c)          (IsUtf8_2ByteHeader(c) || IsUtf8_3ByteHeader(c) || IsUtf8_4ByteHeader(c) || IsUtf8_5ByteHeader(c) || IsUtf8_6ByteHeader(c))
+#define IsUtf8Header(c)    (IsUtf8_2ByteHeader(c) || IsUtf8_3ByteHeader(c) || IsUtf8_4ByteHeader(c) || IsUtf8_5ByteHeader(c) || IsUtf8_6ByteHeader(c))
 #define IsLetterOrDigit(c) (IsLetter(c) || IsDigit(c))
 //#define ToUpper(c)		   (c & ~0x20)
 
@@ -169,19 +169,25 @@ static eToken ScanEof(struct Lexer *lexer) {
 static eToken ScanMinus(struct Lexer *lexer) {
     uint8 c = InputsNextChar(lexer->inputs);
 
-    if (IsDigit(c))
-        return ScanNumber(lexer);
-
-    return TK_SUB;
+    return TK_Sub;
 }
 
 static eToken ScanPlus(struct Lexer *lexer) {
     uint8 c = InputsNextChar(lexer->inputs);
 
-    if (IsDigit(c))
-        return ScanNumber(lexer);
-
     return TK_Add;
+}
+
+static eToken ScanStar(struct Lexer *lexer) {
+    uint8 c = InputsNextChar(lexer->inputs);
+
+    return TK_Mul;
+}
+
+static eToken ScanSlash(struct Lexer *lexer) {
+    uint8 c = InputsNextChar(lexer->inputs);
+
+    return TK_Div;
 }
 
 struct Lexer *CreateLexer() {
@@ -203,6 +209,8 @@ struct Lexer *CreateLexer() {
     lexer->scanners['.'] = ScanFloatLiteral;
     lexer->scanners['-'] = ScanMinus;
     lexer->scanners['+'] = ScanPlus;
+    lexer->scanners['*'] = ScanStar;
+    lexer->scanners['/'] = ScanSlash;
     lexer->scanners[END_OF_FILE] = ScanEof;
 
     return lexer;

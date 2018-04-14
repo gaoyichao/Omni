@@ -34,7 +34,8 @@ SOURCES += basic/queue/queue_uint8.c \
     src/parser.c \
     tests/t_parser.c \
     src/symboltable.c \
-    src/token.c
+    src/token.c \
+    src/expression.c
 
 HEADERS += \
     basic/queue/queue_t_c.h \
@@ -66,5 +67,6 @@ HEADERS += \
     tests/t_lexer.h \
     src/parser.h \
     tests/t_parser.h \
-    src/symboltable.h
+    src/symboltable.h \
+    src/expression.h
 

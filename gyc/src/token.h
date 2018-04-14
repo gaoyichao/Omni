@@ -16,7 +16,9 @@ typedef enum eToken
     TK_StringLiteral,
     TK_BadChar,
     TK_Add, // +
-    TK_SUB, // -
+    TK_Sub, // -
+    TK_Mul, // *
+    TK_Div, // /
     TK_End
 } eToken;
 
