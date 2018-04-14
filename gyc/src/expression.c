@@ -44,6 +44,16 @@ struct Expression *CreatePrimaryExp_Variable(struct Symbol *symbol) {
     re->content.variable = symbol;
     return re;
 }
+/*
+ * CreatePrimaryExp_Exp - 构建一个表达式基本表达式
+ */
+struct Expression *CreatePrimaryExp_Exp(struct Expression *exp) {
+    if (ET_PrimaryExp_Exp == exp->type)
+        return exp;
+    struct Expression *re = CreateExpression(ET_PrimaryExp_Exp);
+    vector_ExpressionPtr_push_back(&(re->subExp), exp);
+    return re;
+}
 
 /*
  * CreateUnaryExp - 构建一个Unary表达式
@@ -154,6 +164,7 @@ double CalcPrimaryExp_Variable(struct Expression *exp) {
         return 0.0;
     return 1.0;
 }
+
 /*
  * CalcUnaryExp - 计算Unary表达式
  */
@@ -204,6 +215,8 @@ double CalcExpression(struct Expression *exp) {
         return exp->content.constant;
     case ET_PrimaryExp_Variable:
         return CalcPrimaryExp_Variable(exp);
+    case ET_PrimaryExp_Exp:
+        return CalcExpression(VECTOR(exp->subExp)[0]);
     case ET_UnaryExp:
         return CalcUnaryExp(exp);
     case ET_MultiplicativeExp:

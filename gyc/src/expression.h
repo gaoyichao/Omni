@@ -29,13 +29,14 @@ typedef struct Expression* ExpressionPtr;
 #undef VECTOR_NUMBER
 
 
-#define IsPrimaryOperator(op) ((TK_FloatingConstant == (op)) || (TK_Id == (op)) || (TK_Variable == (op)))
+#define IsPrimaryOperator(op) ((TK_FloatingConstant == (op)) || \
+                               (TK_Id == (op)) || \
+                               (TK_Variable == (op)) || \
+                               (TK_LParenthesis == (op)))
 #define IsUnaryOperator(op) ((TK_Add == (op)) || (TK_Sub == (op)))
-
-
-#define IsPrimaryExpression(pexp)    ((ET_PrimaryExp_Constant == (pexp)->type) \
-                                   || (ET_PrimaryExp_Exp == (pexp)->type) \
-                                   || (ET_PrimaryExp_Variable == (pexp)->type))
+#define IsPrimaryExpression(pexp)    ((ET_PrimaryExp_Constant == (pexp)->type) || \
+                                      (ET_PrimaryExp_Exp == (pexp)->type) || \
+                                      (ET_PrimaryExp_Variable == (pexp)->type))
 #define IsUnaryExpression(pexp) (ET_UnaryExp == (pexp)->type || IsPrimaryExpression(pexp))
 #define IsMultiplicativeExpression(pexp) (ET_MultiplicativeExp == (pexp)->type || IsUnaryExpression(pexp))
 #define IsAdditiveExpression(pexp)  ((ET_AdditiveExp == (pexp)->type) || IsMultiplicativeExpression(pexp))
@@ -56,6 +57,7 @@ struct Expression {
 struct Expression *CreateExpression(eExpType type);
 struct Expression *CreatePrimaryExp_Constant(const char *cstLiter);
 struct Expression *CreatePrimaryExp_Variable(Symbol *symbol);
+struct Expression *CreatePrimaryExp_Exp(struct Expression *exp);
 
 struct Expression *CreateUnaryExp(eToken op, struct Expression *exp);
 struct Expression *CreateMultiplicativeExp(struct Expression *l, eToken op, struct Expression *r);

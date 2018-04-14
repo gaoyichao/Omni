@@ -190,6 +190,18 @@ static eToken ScanSlash(struct Lexer *lexer) {
     return TK_Div;
 }
 
+static eToken ScanLParenthesis(struct Lexer *lexer) {
+    InputsNextChar(lexer->inputs);
+
+    return TK_LParenthesis;
+}
+
+static eToken ScanRParenthesis(struct Lexer *lexer) {
+    InputsNextChar(lexer->inputs);
+
+    return TK_RParenthesis;
+}
+
 struct Lexer *CreateLexer() {
     struct Lexer *lexer = (struct Lexer *)malloc(sizeof(struct Lexer));
     lexer->symTable = 0;
@@ -211,6 +223,8 @@ struct Lexer *CreateLexer() {
     lexer->scanners['+'] = ScanPlus;
     lexer->scanners['*'] = ScanStar;
     lexer->scanners['/'] = ScanSlash;
+    lexer->scanners['('] = ScanLParenthesis;
+    lexer->scanners[')'] = ScanRParenthesis;
     lexer->scanners[END_OF_FILE] = ScanEof;
 
     return lexer;

@@ -15,10 +15,12 @@ typedef enum eToken
     TK_CharConstant,
     TK_StringLiteral,
     TK_BadChar,
-    TK_Add, // +
-    TK_Sub, // -
-    TK_Mul, // *
-    TK_Div, // /
+    TK_Add,             // +
+    TK_Sub,             // -
+    TK_Mul,             // *
+    TK_Div,             // /
+    TK_LParenthesis,    // (
+    TK_RParenthesis,    // )
     TK_End
 } eToken;
 
