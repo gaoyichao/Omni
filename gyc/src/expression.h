@@ -11,8 +11,9 @@ typedef enum eExpType {
 
     ET_UnaryExp,
     ET_MultiplicativeExp,
-
     ET_AdditiveExp,
+
+    ET_AssignmentExp
 } eExpType;
 
 struct Expression;
@@ -28,18 +29,20 @@ typedef struct Expression* ExpressionPtr;
 #undef T
 #undef VECTOR_NUMBER
 
-
 #define IsPrimaryOperator(op) ((TK_FloatingConstant == (op)) || \
                                (TK_Id == (op)) || \
                                (TK_Variable == (op)) || \
                                (TK_LParenthesis == (op)))
 #define IsUnaryOperator(op) ((TK_Add == (op)) || (TK_Sub == (op)))
+#define IsAssignmentOperator(op) ((TK_Assign == (op)))
+
 #define IsPrimaryExpression(pexp)    ((ET_PrimaryExp_Constant == (pexp)->type) || \
                                       (ET_PrimaryExp_Exp == (pexp)->type) || \
                                       (ET_PrimaryExp_Variable == (pexp)->type))
 #define IsUnaryExpression(pexp) (ET_UnaryExp == (pexp)->type || IsPrimaryExpression(pexp))
 #define IsMultiplicativeExpression(pexp) (ET_MultiplicativeExp == (pexp)->type || IsUnaryExpression(pexp))
 #define IsAdditiveExpression(pexp)  ((ET_AdditiveExp == (pexp)->type) || IsMultiplicativeExpression(pexp))
+#define IsAssignmentExpression(pexp) ((ET_AssignmentExp == (pexp)->type) || IsAdditiveExpression(pexp))
 
 
 typedef union uExpContent {
@@ -60,9 +63,7 @@ struct Expression *CreatePrimaryExp_Variable(Symbol *symbol);
 struct Expression *CreatePrimaryExp_Exp(struct Expression *exp);
 
 struct Expression *CreateUnaryExp(eToken op, struct Expression *exp);
-struct Expression *CreateMultiplicativeExp(struct Expression *l, eToken op, struct Expression *r);
-
-struct Expression *CreateAdditiveExp(struct Expression *l, eToken op, struct Expression *r);
+struct Expression *CreateBiOperandExp(struct Expression *l, eToken op, struct Expression *r, eExpType type);
 
 double CalcExpression(struct Expression *exp);
 void DestroyExpression(struct Expression *exp);

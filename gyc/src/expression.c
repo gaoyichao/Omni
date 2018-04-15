@@ -78,70 +78,31 @@ struct Expression *CreateUnaryExp(eToken op, struct Expression *exp) {
     return re;
 }
 /*
- * CreateMultiplicativeExp - 构建一个乘除运算的表达式
- *
- * multiplicative-expression:
- *      unary-expression
- *      multiplicative-expression * unary-expression
- *      multiplicative-expression / unary-expression
+ * CreateBiOperandExp - 构建一个乘除运算的表达式
  *
  * @l: 左操作数
  * @op: 操作符
  * @r: 右操作数
+ * @type: 表达式类型
  */
-struct Expression *CreateMultiplicativeExp(struct Expression *l, eToken op, struct Expression *r) {
-    assert(IsMultiplicativeExpression(l) && IsMultiplicativeExpression(r));
+struct Expression *CreateBiOperandExp(struct Expression *l, eToken op, struct Expression *r, eExpType type) {
     struct Expression *re = 0;
 
-    if (ET_MultiplicativeExp == l->type) {
+    if (type == l->type) {
         re = l;
     } else {
-        re = CreateExpression(ET_MultiplicativeExp);
+        re = CreateExpression(type);
         vector_ExpressionPtr_push_back(&(re->subExp), l);
     }
     vector_eToken_push_back(&(re->operators), op);
 
-    if (ET_MultiplicativeExp == r->type) {
+    if (type == r->type) {
         vector_ExpressionPtr_append(&(r->subExp), &(re->subExp));
         vector_eToken_append(&(r->operators), &(re->operators));
         DestroyExpression(r);
     } else {
         vector_ExpressionPtr_push_back(&(re->subExp), r);
     }
-    return re;
-}
-/*
- * CreateAdditiveExp - 构建一个加减运算的表达式
- *
- * additive-expression:
- *      multiplicative-expression
- *      additive-expression + multiplicative-expression
- *      additive-expression - mulitplicative-expression
- *
- * @l: 左操作数
- * @op: 操作符
- * @r: 右操作数
- */
-struct Expression *CreateAdditiveExp(struct Expression *l, eToken op, struct Expression *r) {
-    assert(IsAdditiveExpression(l) && IsAdditiveExpression(r));
-    struct Expression *re = 0;
-
-    if (ET_AdditiveExp == l->type) {
-        re = l;
-    } else {
-        re = CreateExpression(ET_AdditiveExp);
-        vector_ExpressionPtr_push_back(&(re->subExp), l);
-    }
-    vector_eToken_push_back(&(re->operators), op);
-
-    if (ET_AdditiveExp == r->type) {
-        vector_ExpressionPtr_append(&(r->subExp), &(re->subExp));
-        vector_eToken_append(&(r->operators), &(re->operators));
-        DestroyExpression(r);
-    } else {
-        vector_ExpressionPtr_push_back(&(re->subExp), r);
-    }
-
     return re;
 }
 
@@ -162,7 +123,8 @@ double CalcPrimaryExp_Variable(struct Expression *exp) {
     struct Symbol *symbol = exp->content.variable;
     if (0 == symbol->vptr)
         return 0.0;
-    return 1.0;
+    else
+        return *(double*)(symbol->vptr);
 }
 
 /*
@@ -208,6 +170,31 @@ double CalcAdditiveExp(struct Expression *exp) {
 
     return left;
 }
+/*
+ * CalcAssignmentExp - 计算赋值表达式
+ */
+double CalcAssignmentExp(struct Expression *exp) {
+    int n = vector_eToken_size(&(exp->operators));
+    double right = CalcExpression(VECTOR(exp->subExp)[n]);
+    Symbol *sym = 0;
+
+    for (int i = (n-1); i >= 0; i--) {
+        struct Expression *var = VECTOR(exp->subExp)[i];
+        assert(ET_PrimaryExp_Variable == var->type);
+        eToken op = VECTOR(exp->operators)[i];
+        assert(TK_Assign == op);
+
+        sym = var->content.variable;
+        if (0 == sym->vptr)
+            sym->vptr = malloc(sizeof(double));
+        *(double*)(sym->vptr) = right;
+    }
+
+    if (0 == sym || 0 == sym->vptr)
+        return 0;
+
+    return *(double*)(sym->vptr);
+}
 
 double CalcExpression(struct Expression *exp) {
     switch (exp->type) {
@@ -223,6 +210,8 @@ double CalcExpression(struct Expression *exp) {
         return CalcMultiplicativeExp(exp);
     case ET_AdditiveExp:
         return CalcAdditiveExp(exp);
+    case ET_AssignmentExp:
+        return CalcAssignmentExp(exp);
     default:
         return 0;
     }

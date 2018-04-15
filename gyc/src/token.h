@@ -21,6 +21,7 @@ typedef enum eToken
     TK_Div,             // /
     TK_LParenthesis,    // (
     TK_RParenthesis,    // )
+    TK_Assign,          // =
     TK_End
 } eToken;
 
@@ -34,9 +35,6 @@ typedef enum eToken
 #undef TEMPLATE_TYPE
 #undef T
 #undef VECTOR_NUMBER
-
-
-
 
 struct Token {
     eToken token;

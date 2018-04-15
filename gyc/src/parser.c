@@ -58,6 +58,11 @@ struct Expression *ParsePrimaryExpression(struct Parser *parser) {
         Symbol *sym = InsertSymbol(parser->symTable, tk->str, TK_Variable, 0);
         re = CreatePrimaryExp_Variable(sym);
         DestroyToken(tk);
+    } else if (TK_Variable == tk->token) {
+        tk = _GetToken(parser);
+        Symbol *sym = SearchSymbol(parser->symTable, tk->str);
+        re = CreatePrimaryExp_Variable(sym);
+        DestroyToken(tk);
     } else if (TK_LParenthesis == tk->token) {
         tk = _GetToken(parser);
         DestroyToken(tk);
@@ -102,8 +107,8 @@ struct Expression *ParseUnaryExpression(struct Parser *parser) {
  *
  * @parser: 解析器
  */
-struct Expression *ParseMultiplicativeExpression(struct Parser *parser) {
-    struct Expression *re = ParseUnaryExpression(parser);
+struct Expression *ParseMultiplicativeExpression(struct Parser *parser, struct Expression *left) {
+    struct Expression *re = (0 == left) ?  ParseUnaryExpression(parser) : left;
     if (0 == re)
         return 0;
 
@@ -112,7 +117,7 @@ struct Expression *ParseMultiplicativeExpression(struct Parser *parser) {
         tk = _GetToken(parser);
         struct Expression *right = ParseUnaryExpression(parser);
         assert(0 != right);
-        re = CreateMultiplicativeExp(re, tk->token, right);
+        re = CreateBiOperandExp(re, tk->token, right, ET_MultiplicativeExp);
         DestroyToken(tk);
         tk = _PeekToken(parser);
     }
@@ -128,17 +133,17 @@ struct Expression *ParseMultiplicativeExpression(struct Parser *parser) {
  *
  * @parser: 解析器
  */
-struct Expression *ParseAdditiveExpression(struct Parser *parser) {
-    struct Expression *re = ParseMultiplicativeExpression(parser);
+struct Expression *ParseAdditiveExpression(struct Parser *parser, struct Expression *left) {
+    struct Expression *re = ParseMultiplicativeExpression(parser, left);
     if (0 == re)
         return 0;
 
     struct Token *tk = _PeekToken(parser);
     while (TK_Add == tk->token || TK_Sub == tk->token) {
         tk = _GetToken(parser);
-        struct Expression *right = ParseMultiplicativeExpression(parser);
+        struct Expression *right = ParseMultiplicativeExpression(parser, 0);
         assert(0 != right);
-        re = CreateAdditiveExp(re, tk->token, right);
+        re = CreateBiOperandExp(re, tk->token, right, ET_AdditiveExp);
         DestroyToken(tk);
         tk = _PeekToken(parser);
     }
@@ -146,7 +151,38 @@ struct Expression *ParseAdditiveExpression(struct Parser *parser) {
     return re;
 }
 
+/*
+ * ParseAssignmentExpression - 构建一个赋值运算的表达式
+ *
+ * assignment-expression:
+ *      additive-expression
+ *      unary-expression assignment-operator assignment-expression
+ *
+ * @parser: 解析器
+ */
+struct Expression *ParseAssignmentExpression(struct Parser *parser) {
+    struct Expression *re = ParseUnaryExpression(parser);
+    if (0 == re)
+        return 0;
+
+    struct Token *tk = _PeekToken(parser);
+    if (!IsAssignmentOperator(tk->token))
+        return ParseAdditiveExpression(parser, re);
+
+    assert(ET_PrimaryExp_Variable == re->type);
+    while (IsAssignmentOperator(tk->token)) {
+        tk = _GetToken(parser);
+        struct Expression *right = ParseAssignmentExpression(parser);
+        assert(0 != right);
+        re = CreateBiOperandExp(re, tk->token, right, ET_AssignmentExp);
+        DestroyToken(tk);
+        tk = _PeekToken(parser);
+    }
+    return re;
+}
+
+
 struct Expression *ParseExpression(struct Parser *parser) {
-    return ParseAdditiveExpression(parser);
+    return ParseAssignmentExpression(parser);
 }
 
