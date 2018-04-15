@@ -14,11 +14,11 @@ struct Inputs {
     int col;
 
 
-    uint8 *mark;
-    uint8 *buf;
-    uint8 *cur;
-    uint8 *end;
-    uint8 *buf_end;
+    uint8 *mark;    // 处理标记
+    uint8 *buf;     // 缓存的起始地址
+    uint8 *cur;     // 当前字节
+    uint8 *end;     // 当前读入内容的结束
+    uint8 *buf_end; // 缓存的结束地址
 };
 
 #define InputUtf8_1Byte ((uint8)0x80)
