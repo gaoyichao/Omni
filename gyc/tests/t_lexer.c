@@ -26,8 +26,13 @@ void T_Lexer() {
 
     struct Token *tk = GetNextToken(lexer);
     while (TK_End != tk->token) {
-        assert(TK_Keyword == tk->token);
-        printf("KEYWORD:%s,line:%d,col:%d\n", tk->str, tk->line, tk->col);
+        printf("Keyword:%d, Comment:%d, tk:%d", TK_Keyword, TK_Comment, tk->token);
+        assert(TK_Keyword == tk->token || TK_Comment == tk->token);
+        if (TK_Keyword == tk->token) {
+            printf("KEYWORD:%s,line:%d,col:%d\n", tk->str, tk->line, tk->col);
+        } else {
+            printf("注释:%s,line:%d,col:%d\n", tk->str, tk->line, tk->col);
+        }
         DestroyToken(tk);
         tk = GetNextToken(lexer);
     }

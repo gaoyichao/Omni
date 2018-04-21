@@ -187,6 +187,27 @@ static eToken ScanStar(struct Lexer *lexer) {
 static eToken ScanSlash(struct Lexer *lexer) {
     uint8 c = InputsNextChar(lexer->inputs);
 
+    if ('/' == c) {
+        while ('\n' != c)
+            c = InputsNextChar(lexer->inputs);
+        return TK_Comment;
+    } else if ('*' == c) {
+        c = InputsNextChar(lexer->inputs);
+        while (1) {
+            if ('*' == c) {
+                c = InputsNextChar(lexer->inputs);
+                if ('/' == c) {
+                    c = InputsNextChar(lexer->inputs);
+                    return TK_Comment;
+                }
+            } else if (END_OF_FILE == c) {
+                Fatal(lexer->inputs, "未找到注释结尾标识'*/'");
+            } else {
+                c = InputsNextChar(lexer->inputs);
+            }
+        }
+    }
+
     return TK_Div;
 }
 
@@ -278,7 +299,7 @@ void DestroyLexer(struct Lexer *lexer) {
 
 #define SCANNER(plexer) ((plexer)->scanners)
 
-struct Token *GetNextToken(struct Lexer *lexer) {
+struct Token *_GetNextToken(struct Lexer *lexer) {
     InputsUnMark(lexer->inputs);
     EatWhiteSpace(lexer);
 
@@ -303,4 +324,14 @@ struct Token *GetNextToken(struct Lexer *lexer) {
     return re;
 }
 
+struct Token *GetNextToken(struct Lexer *lexer) {
+    struct Token *tk = _GetNextToken(lexer);
+
+    while (TK_Comment == tk->token) {
+        DestroyToken(tk);
+        tk = _GetNextToken(lexer);
+    }
+
+    return tk;
+}
 

@@ -14,6 +14,7 @@ typedef enum eToken
     TK_FloatingConstant,
     TK_CharConstant,
     TK_StringLiteral,
+    TK_Comment,
     TK_BadChar,
     TK_Add,             // +
     TK_Sub,             // -
