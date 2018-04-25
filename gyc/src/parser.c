@@ -7,7 +7,8 @@ struct Parser *CreateParser() {
     struct Parser *re = (struct Parser*)malloc(sizeof(struct Parser));
     re->lexer = 0;
     re->symTable = 0;
-    re->ctoken = 0;
+    re->ctkIndex = 0;
+    re->ctk = TK_Begin;
 
     return re;
 }
@@ -16,20 +17,16 @@ void DestroyParser(struct Parser *parser) {
     free(parser);
 }
 
+struct Token *_CheckToken(struct Parser *parser, eToken token) {
+    if (token == parser->ctk) {
+        struct Token *tk = GetNextToken(parser->lexer);
+        parser->ctk = tk->token;
+        parser->ctkIndex++;
 
-static struct Token *_PeekToken(struct Parser *parser) {
-    if (0 == parser->ctoken)
-        parser->ctoken = GetNextToken(parser->lexer);
-    return parser->ctoken;
-}
-
-static struct Token *_GetToken(struct Parser *parser) {
-    if (0 != parser->ctoken) {
-        struct Token *re = parser->ctoken;
-        parser->ctoken = 0;
-        return re;
+        return &VECTOR(parser->lexer->tokens)[parser->ctkIndex - 2];
     } else {
-        return GetNextToken(parser->lexer);
+        assert(0);
+        return 0;
     }
 }
 
@@ -46,31 +43,26 @@ static struct Token *_GetToken(struct Parser *parser) {
  */
 struct Expression *ParsePrimaryExpression(struct Parser *parser) {
     struct Expression *re = 0;
-    struct Token *tk = _PeekToken(parser);
+    eToken token = parser->ctk;
+    Token *tk;
 
-    if (TK_FloatingConstant == tk->token) {
-        tk = _GetToken(parser);
+    if (TK_FloatingConstant == token) {
+        tk = _CheckToken(parser, token);
         re = CreatePrimaryExp_Constant((const char*)tk->str);
-        DestroyToken(tk);
-    } else if (TK_Id == tk->token) {
+    } else if (TK_Id == token) {
         // TODO: TK_Id更换为TK_Variable
-        tk = _GetToken(parser);
+        tk = _CheckToken(parser, token);
         Symbol *sym = InsertSymbol(parser->symTable, tk->str, TK_Variable, 0);
         re = CreatePrimaryExp_Variable(sym);
-        DestroyToken(tk);
-    } else if (TK_Variable == tk->token) {
-        tk = _GetToken(parser);
+    } else if (TK_Variable == token) {
+        tk = _CheckToken(parser, token);
         Symbol *sym = SearchSymbol(parser->symTable, tk->str);
         re = CreatePrimaryExp_Variable(sym);
-        DestroyToken(tk);
-    } else if (TK_LParenthesis == tk->token) {
-        tk = _GetToken(parser);
-        DestroyToken(tk);
+    } else if (TK_LParenthesis == token) {
+        _CheckToken(parser, token);
         struct Expression *tmp = ParseExpression(parser);
-        tk = _GetToken(parser);
-        assert(TK_RParenthesis == tk->token);
+        _CheckToken(parser, TK_RParenthesis);
         re = CreatePrimaryExp_Exp(tmp);
-        DestroyToken(tk);
     }
     return re;
 }
@@ -85,14 +77,13 @@ struct Expression *ParsePrimaryExpression(struct Parser *parser) {
  */
 struct Expression *ParseUnaryExpression(struct Parser *parser) {
     struct Expression *re = 0;
-    struct Token *tk = _PeekToken(parser);
+    eToken token = parser->ctk;
 
-    if (IsUnaryOperator(tk->token)) {
-        tk = _GetToken(parser);
+    if (IsUnaryOperator(token)) {
+        _CheckToken(parser, token);
         struct Expression *tmp = ParseUnaryExpression(parser);
-        re = CreateUnaryExp(tk->token, tmp);
-        DestroyToken(tk);
-    } else if (IsPrimaryOperator(tk->token)) {
+        re = CreateUnaryExp(token, tmp);
+    } else if (IsPrimaryOperator(token)) {
         re = ParsePrimaryExpression(parser);
     }
     return re;
@@ -112,14 +103,14 @@ struct Expression *ParseMultiplicativeExpression(struct Parser *parser, struct E
     if (0 == re)
         return 0;
 
-    struct Token *tk = _PeekToken(parser);
-    while (TK_Mul == tk->token || TK_Div == tk->token) {
-        tk = _GetToken(parser);
+    eToken token = parser->ctk;
+
+    while (TK_Mul == token || TK_Div == token) {
+        _CheckToken(parser, token);
         struct Expression *right = ParseUnaryExpression(parser);
         assert(0 != right);
-        re = CreateBiOperandExp(re, tk->token, right, ET_MultiplicativeExp);
-        DestroyToken(tk);
-        tk = _PeekToken(parser);
+        re = CreateBiOperandExp(re, token, right, ET_MultiplicativeExp);
+        token = parser->ctk;
     }
     return re;
 }
@@ -138,14 +129,13 @@ struct Expression *ParseAdditiveExpression(struct Parser *parser, struct Express
     if (0 == re)
         return 0;
 
-    struct Token *tk = _PeekToken(parser);
-    while (TK_Add == tk->token || TK_Sub == tk->token) {
-        tk = _GetToken(parser);
+    eToken token = parser->ctk;
+    while (TK_Add == token || TK_Sub == token) {
+        _CheckToken(parser, token);
         struct Expression *right = ParseMultiplicativeExpression(parser, 0);
         assert(0 != right);
-        re = CreateBiOperandExp(re, tk->token, right, ET_AdditiveExp);
-        DestroyToken(tk);
-        tk = _PeekToken(parser);
+        re = CreateBiOperandExp(re, token, right, ET_AdditiveExp);
+        token = parser->ctk;
     }
 
     return re;
@@ -165,24 +155,25 @@ struct Expression *ParseAssignmentExpression(struct Parser *parser) {
     if (0 == re)
         return 0;
 
-    struct Token *tk = _PeekToken(parser);
-    if (!IsAssignmentOperator(tk->token))
+    eToken token = parser->ctk;
+    if (!IsAssignmentOperator(token))
         return ParseAdditiveExpression(parser, re);
 
     assert(ET_PrimaryExp_Variable == re->type);
-    while (IsAssignmentOperator(tk->token)) {
-        tk = _GetToken(parser);
+    while (IsAssignmentOperator(token)) {
+        _CheckToken(parser, token);
         struct Expression *right = ParseAssignmentExpression(parser);
         assert(0 != right);
-        re = CreateBiOperandExp(re, tk->token, right, ET_AssignmentExp);
-        DestroyToken(tk);
-        tk = _PeekToken(parser);
+        re = CreateBiOperandExp(re, token, right, ET_AssignmentExp);
+        token = parser->ctk;
     }
     return re;
 }
 
 
 struct Expression *ParseExpression(struct Parser *parser) {
+    if (TK_Begin == parser->ctk)
+        _CheckToken(parser, TK_Begin);
     return ParseAssignmentExpression(parser);
 }
 

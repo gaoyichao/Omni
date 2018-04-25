@@ -82,6 +82,7 @@ int TEMPLATE_FUNCTION(vector, append)(const TEMPLATE_TYPE(vector) *from, TEMPLAT
 int TEMPLATE_FUNCTION(vector,move_interval)(TEMPLATE_TYPE(vector) *v, int begin, int end, int to);
 
 T* TEMPLATE_FUNCTION(vector, new_item)(TEMPLATE_TYPE(vector) *v);
+T* TEMPLATE_FUNCTION(vector, new_items)(TEMPLATE_TYPE(vector) *v, int n);
 int TEMPLATE_FUNCTION(vector, insert)(TEMPLATE_TYPE(vector) *v, unsigned int pos, T value);
 int TEMPLATE_FUNCTION(vector, swap_elements)(TEMPLATE_TYPE(vector) *v, int i, int j);
 int TEMPLATE_FUNCTION(vector, push_back)(TEMPLATE_TYPE(vector) *v, T e);

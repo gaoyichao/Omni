@@ -4,6 +4,10 @@
 #include <stdio.h>
 
 void T_Dictionary(void) {
+    printf("\n******************************\n");
+    printf("    T_Dictionary 测试开始\n");
+    printf("******************************\n");
+
     struct Dictionary *dic = CreateDictionary();
     assert(0 != dic);
     assert(0 != dic->tree);
@@ -17,6 +21,7 @@ void T_Dictionary(void) {
     assert(0 != pair1);
     assert(0 != pair1->key);
     assert(0 == pair1->key->tree);
+    assert('\0' == pair1->key->byte);
     assert(value1 == *((int*)(pair1->vptr)));
     assert(&value1 == pair1->vptr);
     assert(0 == pair1->key->index);
@@ -44,12 +49,17 @@ void T_Dictionary(void) {
 
     DicPairPtr pair4 = DicGetPair(dic, (uint8*)origin1);
     assert(pair4 == pair1);
+    assert('\0' == pair4->key->byte);
     assert(value1 == *((int*)DicGetVptr(dic, (uint8*)origin1)));
     DicPairPtr pair5 = DicGetPair(dic, (uint8*)origin2);
     assert(pair5 == pair2);
     assert(value2 == *((int*)DicGetVptr(dic, (uint8*)origin2)));
     DicPairPtr pair6 = DicGetPair(dic, (uint8*)("abc"));
     assert(0 == pair6);
+    pair6 = DicGetPair2(dic, (uint8*)origin1, strlen(origin1));
+    assert(pair6 == pair1);
+    assert('\0' == pair6->key->byte);
+    assert(value1 == *((int*)DicGetVptr2(dic, (uint8*)origin1, strlen(origin1))));
 
     uint8 *str1 = DicGetKey(pair3);
     printf("str1 = %s\n", str1);
@@ -87,5 +97,8 @@ void T_Dictionary(void) {
     assert(2 == size);
 
     DestroyDictionary(dic);
+
+    printf("  T_Dictionary 测试结束!\n");
+    printf("******************************\n");
 }
 

@@ -86,6 +86,7 @@ void T_BinaryTreeInsert(void) {
 #include <t_inputs.h>
 #include <t_lexer.h>
 #include <t_parser.h>
+#include <t_preprocessor.h>
 #include <stdio.h>
 
 int main(void)
@@ -96,6 +97,7 @@ int main(void)
 
     T_queue_uint8();
     T_vector_int();
+    T_vector_uint8();
 
     T_graph();
     T_graph_weight();
@@ -103,6 +105,8 @@ int main(void)
     T_Inputs();
     T_Lexer();
     T_Parser();
+
+    T_PreProcessor();
 
     printf("通过了!\n");
     printf("sizeof(void*):%d\n", sizeof(void*));

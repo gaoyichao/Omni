@@ -197,6 +197,7 @@ double CalcAssignmentExp(struct Expression *exp) {
 }
 
 double CalcExpression(struct Expression *exp) {
+    //printf(">>> %d", exp->type);
     switch (exp->type) {
     case ET_PrimaryExp_Constant:
         return exp->content.constant;

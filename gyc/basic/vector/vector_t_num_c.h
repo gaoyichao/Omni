@@ -39,7 +39,6 @@ int TEMPLATE_FUNCTION(vector,init_value)(TEMPLATE_TYPE(vector) *v, int no, ...)
 
     return 0;
 }
-
 /*
  * vector_T_init_value_end - 以参数列表初始化一个Vector.
  *

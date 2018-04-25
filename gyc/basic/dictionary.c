@@ -163,6 +163,22 @@ DicPairPtr DicGetPair(struct Dictionary *dic, const uint8 *key) {
     int index = ((struct ByteInfo*)node->pValue)->index;
     return VECTOR(dic->pairs)[index];
 }
+
+DicPairPtr DicGetPair2(struct Dictionary *dic, const uint8 *key, int len) {
+    struct BinaryNode *node = _DicSearch(dic, key, len);
+    if (0 == node)
+        return 0;
+
+    struct ByteInfo info;
+    info.byte = '\0';
+    node = BT_FindValue(((struct ByteInfo*)(node->pValue))->tree, (void*)&info);
+    if (0 == node)
+        return 0;
+
+    int index = ((struct ByteInfo*)node->pValue)->index;
+    return VECTOR(dic->pairs)[index];
+}
+
 /*
  * DicGetVptr - 从字典中查询数值指针,若没有查到,将返回0
  *
@@ -173,8 +189,14 @@ void* DicGetVptr(struct Dictionary *dic, const uint8 *key) {
     DicPairPtr pair = DicGetPair(dic, key);
     return (0 == pair) ? 0 : VECTOR(dic->pairs)[pair->key->index]->vptr;
 }
+
+void* DicGetVptr2(struct Dictionary *dic, const uint8 *key, int len) {
+    DicPairPtr pair = DicGetPair2(dic, key, len);
+    return (0 == pair) ? 0 : VECTOR(dic->pairs)[pair->key->index]->vptr;
+}
+
 /*
- * DicGetKey - 回溯Key字符串
+ * DicGetKey - 回溯Key字符串,申请了内存需要释放
  *
  * @pair: 字典对指针
  */

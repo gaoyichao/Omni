@@ -21,37 +21,31 @@ void T_Inputs() {
     struct Token *re = GetNextToken(lexer);
     assert(TK_Id == re->token);
     printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
-    DestroyToken(re);
 
     re = GetNextToken(lexer);
     assert(TK_Id == re->token);
     printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
-    DestroyToken(re);
 
     re = GetNextToken(lexer);
     assert(TK_StringLiteral == re->token);
     printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
-    DestroyToken(re);
     // 3
     for (int i = 0; i < 3; i++) {
         re = GetNextToken(lexer);
         assert(TK_IntegerConstant == re->token);
         printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
-        DestroyToken(re);
     }
     // 9
     for (int i = 0; i < 9; i++) {
         re = GetNextToken(lexer);
         assert(TK_FloatingConstant == re->token);
         printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
-        DestroyToken(re);
     }
     // 4
     for (int i = 0; i < 4; i++) {
         re = GetNextToken(lexer);
         assert(TK_CharConstant == re->token);
         printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
-        DestroyToken(re);
     }
 
     re = GetNextToken(lexer);

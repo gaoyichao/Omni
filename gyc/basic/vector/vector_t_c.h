@@ -388,6 +388,24 @@ T* TEMPLATE_FUNCTION(vector, new_item)(TEMPLATE_TYPE(vector) *v)
 	v->end += 1;
 	return (v->end - 1);
 }
+/*
+ * vector_T_new_items - 新建n个T对象,返回起始地址
+ */
+T* TEMPLATE_FUNCTION(vector, new_items)(TEMPLATE_TYPE(vector) *v, int n)
+{
+    assert(v != NULL);
+    assert(v->stor_begin != NULL);
+
+    /* full, allocate more storage */
+    if (v->stor_end <= (v->end + n)) {
+        int new_size = TEMPLATE_FUNCTION(vector, size)(v);
+        new_size = (new_size < n) ? (n * 2) : (new_size *2);
+        TEMPLATE_FUNCTION(vector, reserve)(v, new_size);
+    }
+
+    v->end += n;
+    return (v->end - n);
+}
 
 /*
  * vector_T_insert - 在@pos位置插入一个T对象@value

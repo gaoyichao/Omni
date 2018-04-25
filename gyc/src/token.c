@@ -12,6 +12,14 @@
 #undef T
 #undef VECTOR_NUMBER
 
+#define T Token
+#define TEMPLATE_TYPE(a) a ##_Token
+#define TEMPLATE_FUNCTION(a,b) a ##_Token_## b
+#include <vector/vector_t_c.h>
+#undef TEMPLATE_FUNCTION
+#undef TEMPLATE_TYPE
+#undef T
+/*
 struct Token *CreateToken(eToken type, const uint8 *buf, int len) {
     struct Token *re = Calloc(1, struct Token);
     re->line = 0;
@@ -27,4 +35,4 @@ void DestroyToken(struct Token *token) {
     Free(token->str);
     Free(token);
 }
-
+*/

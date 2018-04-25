@@ -48,7 +48,9 @@ uint8* _DicTraceBackStr(const struct BinaryNode *node);
 
 DicPairPtr DicInsertPair(struct Dictionary *dic, const uint8 *key, void *vptr);
 DicPairPtr DicGetPair(struct Dictionary *dic, const uint8 *key);
+DicPairPtr DicGetPair2(struct Dictionary *dic, const uint8 *key, int len);
 void* DicGetVptr(struct Dictionary *dic, const uint8 *key);
+void* DicGetVptr2(struct Dictionary *dic, const uint8 *key, int len);
 uint8* DicGetKey(DicPairPtr pair);
 void DicDeletePair(struct Dictionary *dic, DicPairPtr pair);
 void DicDelete(struct Dictionary *dic, const uint8 *key);

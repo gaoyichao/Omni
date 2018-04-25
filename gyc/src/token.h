@@ -23,6 +23,7 @@ typedef enum eToken
     TK_LParenthesis,    // (
     TK_RParenthesis,    // )
     TK_Assign,          // =
+    TK_Hash,            // #
     TK_End
 } eToken;
 
@@ -37,15 +38,21 @@ typedef enum eToken
 #undef T
 #undef VECTOR_NUMBER
 
-struct Token {
+typedef struct Token {
     eToken token;
     uint8 *str;
     int line;
     int col;
-};
+} Token;
 
-struct Token *CreateToken(eToken type, const uint8 *buf, int len);
-void DestroyToken(struct Token *token);
+#define T Token
+#define TEMPLATE_TYPE(a) a ##_Token
+#define TEMPLATE_FUNCTION(a,b) a ##_Token_## b
+#include <vector/vector_t_h.h>
+#undef TEMPLATE_FUNCTION
+#undef TEMPLATE_TYPE
+#undef T
+
 
 
 #endif
