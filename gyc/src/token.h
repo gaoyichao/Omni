@@ -53,6 +53,18 @@ typedef struct Token {
 #undef TEMPLATE_TYPE
 #undef T
 
+#include <vector_uint8.h>
 
+struct TokenList {
+    vector_Token tokens;            // Token列表,在词法分析过程中不断扩充
+    vector_uint8 strings;           // Token对应的字符串,在词法分析过程中不断扩充
+};
+
+struct TokenList* CreateTokenList();
+void TokenList_Clear(struct TokenList *tklist);
+void DestroyTokenList(struct TokenList *tklist);
+
+struct Token *TokenList_NewItem(struct TokenList *tklist, eToken type, const uint8 *buf, int len);
+struct Token *TokenList_GetItem(struct TokenList *tklist, int n);
 
 #endif

@@ -24,7 +24,7 @@ void T_Lexer() {
     struct Inputs *inputs = CreateInputs("KeyWords");
     LexerSetInputs(lexer, inputs);
 
-    struct Token *tk = GetNextToken(lexer);
+    struct Token *tk = Parser_NextToken(lexer);
     while (TK_End != tk->token) {
         printf("Keyword:%d, Comment:%d, tk:%d\n", TK_Keyword, TK_Comment, tk->token);
         assert(TK_Keyword == tk->token || TK_Comment == tk->token);
@@ -33,7 +33,7 @@ void T_Lexer() {
         } else {
             printf("\t注释:%s,line:%d,col:%d\n", tk->str, tk->line, tk->col);
         }
-        tk = GetNextToken(lexer);
+        tk = Parser_NextToken(lexer);
     }
     DestroyInputs(inputs);
 

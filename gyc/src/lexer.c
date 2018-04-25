@@ -237,8 +237,7 @@ static eToken ScanHash(struct Lexer *lexer) {
 struct Lexer *CreateLexer() {
     struct Lexer *lexer = (struct Lexer *)malloc(sizeof(struct Lexer));
     lexer->symTable = 0;
-    vector_Token_init(&(lexer->tokens), 0);
-    vector_uint8_init(&(lexer->strings), 0);
+    lexer->tkList = CreateTokenList();
 
     uint8 i = 0;
     for (i = 0; i < END_OF_FILE; i++) {
@@ -280,16 +279,15 @@ void LexerLoadKeywords(struct Lexer *lexer, char *filename) {
     struct Inputs *bk = lexer->inputs;
     lexer->inputs = inputs;
 
-    struct Token *tk = GetNextToken(lexer);
+    struct Token *tk = Parser_NextToken(lexer);
     while (TK_End != tk->token) {
         Symbol *sym = InsertSymbol(lexer->symTable, tk->str, TK_Keyword, 0);
         if (0 == sym)
             Fatal(inputs, "重复定义关键字:%s\n", tk->str);
-        tk = GetNextToken(lexer);
+        tk = Parser_NextToken(lexer);
     }
 
-    vector_Token_clear(&(lexer->tokens));
-    vector_uint8_clear(&(lexer->strings));
+    TokenList_Clear(lexer->tkList);
     DestroyInputs(inputs);
     lexer->inputs = bk;
 }
@@ -301,8 +299,7 @@ void LexerSetInputs(struct Lexer *lexer, struct Inputs *inputs) {
 void DestroyLexer(struct Lexer *lexer) {
     lexer->inputs = 0;
     lexer->symTable = 0;
-    vector_Token_destroy(&(lexer->tokens));
-    vector_uint8_destroy(&(lexer->strings));
+    DestroyTokenList(lexer->tkList);
     free(lexer);
 }
 
@@ -320,15 +317,9 @@ struct Token *_GetNextToken(struct Lexer *lexer) {
     if (len < 0)
         return 0;
 
-    //struct Token *re = CreateToken(tk, lexer->inputs->mark, len);
-    Token *re = vector_Token_new_item(&(lexer->tokens));
+    Token *re = TokenList_NewItem(lexer->tkList, tk, lexer->inputs->mark, len);
     re->line = lexer->inputs->line;
     re->col = lexer->inputs->col;
-    re->token = tk;
-    //re->str = vector_uint8_new_items(&(lexer->strings), len+1);
-    re->str = Calloc(len + 1, uint8);
-    memcpy(re->str, lexer->inputs->mark, len);
-    re->str[len] = '\0';
 
     if (0 != lexer->symTable && TK_Id == tk) {
         Symbol *sym = SearchSymbol(lexer->symTable, re->str);
@@ -339,7 +330,7 @@ struct Token *_GetNextToken(struct Lexer *lexer) {
     return re;
 }
 
-struct Token *GetNextToken(struct Lexer *lexer) {
+struct Token *Parser_NextToken(struct Lexer *lexer) {
     struct Token *tk = _GetNextToken(lexer);
 
     while (TK_Comment == tk->token) {

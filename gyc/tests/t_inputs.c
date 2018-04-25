@@ -18,37 +18,37 @@ void T_Inputs() {
     struct Lexer *lexer = CreateLexer();
     LexerSetInputs(lexer, inputs);
 
-    struct Token *re = GetNextToken(lexer);
+    struct Token *re = Parser_NextToken(lexer);
     assert(TK_Id == re->token);
     printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
 
-    re = GetNextToken(lexer);
+    re = Parser_NextToken(lexer);
     assert(TK_Id == re->token);
     printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
 
-    re = GetNextToken(lexer);
+    re = Parser_NextToken(lexer);
     assert(TK_StringLiteral == re->token);
     printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
     // 3
     for (int i = 0; i < 3; i++) {
-        re = GetNextToken(lexer);
+        re = Parser_NextToken(lexer);
         assert(TK_IntegerConstant == re->token);
         printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
     }
     // 9
     for (int i = 0; i < 9; i++) {
-        re = GetNextToken(lexer);
+        re = Parser_NextToken(lexer);
         assert(TK_FloatingConstant == re->token);
         printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
     }
     // 4
     for (int i = 0; i < 4; i++) {
-        re = GetNextToken(lexer);
+        re = Parser_NextToken(lexer);
         assert(TK_CharConstant == re->token);
         printf("%s,line:%d,col:%d\n", re->str, re->line, re->col);
     }
 
-    re = GetNextToken(lexer);
+    re = Parser_NextToken(lexer);
     assert(TK_End == re->token);
 
     DestroyInputs(inputs);

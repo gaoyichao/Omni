@@ -19,11 +19,11 @@ void DestroyParser(struct Parser *parser) {
 
 struct Token *_CheckToken(struct Parser *parser, eToken token) {
     if (token == parser->ctk) {
-        struct Token *tk = GetNextToken(parser->lexer);
+        struct Token *tk = Parser_NextToken(parser->lexer);
         parser->ctk = tk->token;
         parser->ctkIndex++;
 
-        return &VECTOR(parser->lexer->tokens)[parser->ctkIndex - 2];
+        return TokenList_GetItem(parser->lexer->tkList, parser->ctkIndex - 2);
     } else {
         assert(0);
         return 0;
